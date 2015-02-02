@@ -66,6 +66,12 @@ int main(int argc, char **argv){
 }
 
 void handleChild(char **sharedMemory, int size){
+  struct timespec start;
+  if(clock_gettime(CLOCK_REALTIME, &start) == -1){
+    perror("clock gettime");
+    exit(EXIT_FAILURE);
+  }
+  printf("start seconds: %lu nanoseconds: %lu\n", start.tv_sec, start.tv_nsec);
   //this process will produce data
   pthread_mutex_lock(lock);
   while(*bufferFull == 1){
@@ -75,6 +81,7 @@ void handleChild(char **sharedMemory, int size){
   void *data = malloc(size);
   memcpy(*sharedMemory, data, size);
   *bufferFull = 1; //buffer is now full
+  printf("wrote %d bytes\n", size);
   pthread_cond_signal(cond);
   pthread_mutex_unlock(lock);
 }
@@ -89,8 +96,14 @@ void handleParent(char **sharedMemory, int size){
   void *data = malloc(size);
   memcpy(data, *sharedMemory, size);
   *bufferFull = 0; //buffer is now empty
+  printf("read: %d bytes\n", size);
   pthread_cond_signal(cond);
   pthread_mutex_unlock(lock);
-  printf("read: %d bytes\n", size);
   free(data);
+  struct timespec stop;
+  if(clock_gettime(CLOCK_REALTIME, &stop) == -1){
+    perror("clock gettime");
+    exit(EXIT_FAILURE);
+  }
+  printf("stop seconds: %lu nanoseconds: %lu\n", stop.tv_sec, stop.tv_nsec);
 }

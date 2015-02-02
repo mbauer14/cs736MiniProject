@@ -9,6 +9,7 @@ int *bufferFull;
 int main(int argc, char **argv){
 
   int size = SIZE_512K;
+  int returnVal;
 
   //create some shared memory here
   char* sharedMemory = (char *)mmap(NULL, size, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
@@ -18,14 +19,31 @@ int main(int argc, char **argv){
   bufferFull = (int *)mmap(NULL, sizeof(int), PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
   *bufferFull = 0;
 
-  //check for error conditions later
-  pthread_mutexattr_init(&mutex_shared_attr);
-  pthread_mutexattr_setpshared(&mutex_shared_attr, PTHREAD_PROCESS_SHARED);
-  pthread_mutex_init(lock, &mutex_shared_attr);
+  if((returnVal = pthread_mutexattr_init(&mutex_shared_attr)) != 0){
+    fprintf(stderr, "pthread_mutexattr_init");
+    return 1;
+  }
+  if((returnVal = pthread_mutexattr_setpshared(&mutex_shared_attr, PTHREAD_PROCESS_SHARED)) != 0){
+    fprintf(stderr, "pthread_mutexattr_setshared");
+    return 1;
+  }
+  if((returnVal = pthread_mutex_init(lock, &mutex_shared_attr)) != 0){
+    fprintf(stderr, "pthread_mutex_init");
+    return 1;
+  }
 
-  pthread_condattr_init(&cond_shared_attr);
-  pthread_condattr_setpshared(&cond_shared_attr, PTHREAD_PROCESS_SHARED);
-  pthread_cond_init(cond, &cond_shared_attr);
+  if((returnVal = pthread_condattr_init(&cond_shared_attr)) != 0){
+    fprintf(stderr, "pthread_condattr_init");
+    return 1;
+  }
+  if((returnVal = pthread_condattr_setpshared(&cond_shared_attr, PTHREAD_PROCESS_SHARED)) != 0){
+    fprintf(stderr, "pthread_condattr_setshared");
+    return 1;
+  }
+  if((returnVal = pthread_cond_init(cond, &cond_shared_attr)) != 0){
+    fprintf(stderr, "pthread_cond_init");
+    return 1;
+  }
 
   int pid;
 
@@ -54,8 +72,8 @@ void handleChild(char **sharedMemory, int size){
    pthread_cond_wait(cond, lock);
   }
   //produce data here
-  char data[size];
-  strncpy(*sharedMemory, data, size);
+  void *data = malloc(size);
+  memcpy(*sharedMemory, data, size);
   *bufferFull = 1; //buffer is now full
   pthread_cond_signal(cond);
   pthread_mutex_unlock(lock);
@@ -68,10 +86,11 @@ void handleParent(char **sharedMemory, int size){
     pthread_cond_wait(cond, lock);
   }
   //consume the data here
-  char data[size];
-  strncpy(data, *sharedMemory, size);
+  void *data = malloc(size);
+  memcpy(data, *sharedMemory, size);
   *bufferFull = 0; //buffer is now empty
   pthread_cond_signal(cond);
   pthread_mutex_unlock(lock);
   printf("read: %d bytes\n", size);
+  free(data);
 }

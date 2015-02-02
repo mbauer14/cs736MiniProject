@@ -2,6 +2,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <pthread.h>
+#include <stdlib.h>
 
 #define SIZE_4 4
 #define SIZE_16 16

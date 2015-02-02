@@ -28,17 +28,19 @@ int main(int argc, char **argv){
 void handleChild(int* fd, int size){
   //child closes input side of pipe and writes output
   close(fd[0]);
-  char writebuffer[size];
+  void *writebuffer = malloc(size);
   //send whatever data is in the buffer, doesnt matter what it is
   write(fd[1], writebuffer, size);
+  free(writebuffer);
 }
 
 void handleParent(int* fd, int size){
   //parent closes the output side of the pip
   close(fd[1]);
   //read in bytes
-  char readbuffer[size];
+  void *readbuffer = malloc(size);
   int nbytes;
-  nbytes = read(fd[0], readbuffer, sizeof(readbuffer));
+  nbytes = read(fd[0], readbuffer, size);
   printf("bytes read: %d\n", nbytes);
+  free(readbuffer);
 }

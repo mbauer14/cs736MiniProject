@@ -80,7 +80,7 @@ done
 
 echo "Finished $SIZE"
 
-SIZE=655536
+SIZE=65536
 rm -f tcp_latency_$SIZE.txt
 for((c=1; c<=$NUM_ITERATIONS; c++))
 do

@@ -8,12 +8,21 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <time.h>
 
 int main(int argc, char ** argv)
 {
     int sizeBuffer, retval;
     int sockfd;
     int portno = 5050;
+    int cli_sockfd;
+
+    struct timespec stop;
+
+    struct sockaddr_in client;
+    memset(&client, 0, sizeof(client));
+    socklen_t length = sizeof(client);
+
 	if (argc < 3) {
 		printf("Usage %s buffersize\n", argv[0]);
         exit(0);
@@ -30,6 +39,7 @@ int main(int argc, char ** argv)
 
     sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (const char *) &on, sizeof(int));
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const char *) &on, sizeof(int));
 
     if (sockfd == -1) {
         printf("ERROR: create socket.\n");
@@ -55,13 +65,10 @@ int main(int argc, char ** argv)
         close(sockfd);
         return 0;
     }
- 
+
 
     //Create a fd for the new connection
-    struct sockaddr_in client;
-    memset(&client, 0, sizeof(client));
-    socklen_t length = sizeof(client);
-    int cli_sockfd = accept(sockfd, (struct sockaddr *) & client, &length);
+    cli_sockfd = accept(sockfd, (struct sockaddr *) & client, &length);
     if (cli_sockfd == -1) {
         printf("ERROR: accepting client.\n");
         close(sockfd);
@@ -76,12 +83,14 @@ int main(int argc, char ** argv)
         close(sockfd);
         return 0;
     }
-
     if (retval > 0) {
         printf("num buffers received: %d\n", retval);
     }
+    
+    clock_gettime(CLOCK_REALTIME, &stop);
 
-    retval = send(cli_sockfd, buff, sizeBuffer, 0);
+
+    retval = send(cli_sockfd, &stop, sizeof(struct timespec), 0);
     if (retval == -1) {
         printf("ERROR: sending to client.\n");
         close(cli_sockfd);

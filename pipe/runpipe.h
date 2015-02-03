@@ -14,8 +14,6 @@
 #define SIZE_256K 262144
 #define SIZE_512K 524288
 
-#define BILLION 1000000000L;
+void handleChild(int *fd_to_child, int *fd_to_parent, int size, void **readbuffer);
 
-void handleChild(int* fd, int size);
-
-void handleParent(int* fd, int size);
+void handleParent(int *fd_to_child, int *fd_to_parent, int size, void **writebuffer);

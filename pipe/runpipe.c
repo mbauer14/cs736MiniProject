@@ -6,7 +6,7 @@ int main(int argc, char **argv){
   int fd_to_child[2];
   int fd_to_parent[2];
 
-  int size = SIZE_512K;
+  int size = SIZE_4;
 
   void *readbuffer = malloc(size);
   void *writebuffer = malloc(size);
@@ -53,9 +53,7 @@ void handleParent(int *fd_to_child, int *fd_to_parent, int size, void **writebuf
   clock_gettime(CLOCK_REALTIME, &start);
   write(fd_to_child[1], *writebuffer, size);
   struct timespec stop;
-  //printf("about to read timestamp\n");
   int bytes = read(fd_to_parent[0], &stop, sizeof(struct timespec));
-  //printf("read returned: %d\n", bytes);
   long startnano = (start.tv_sec * 1000000000) + start.tv_nsec;
   long stopnano = (stop.tv_sec * 1000000000) + stop.tv_nsec;
   printf("difference %lu\n", stopnano-startnano);

@@ -19,3 +19,4 @@
 void handleChild(char **sharedMemory, int size);
 
 void handleParent(char **sharedMemory, int size);
+

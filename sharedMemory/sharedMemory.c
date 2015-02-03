@@ -5,6 +5,7 @@ pthread_condattr_t cond_shared_attr;
 pthread_mutex_t *lock;
 pthread_cond_t *cond;
 int *bufferFull;
+struct timespec *start;
 
 int main(int argc, char **argv){
 
@@ -18,6 +19,8 @@ int main(int argc, char **argv){
   cond = (pthread_cond_t *)mmap(NULL, sizeof(pthread_cond_t), PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
   bufferFull = (int *)mmap(NULL, sizeof(int), PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
   *bufferFull = 0;
+
+  start = (struct timespec *)mmap(NULL, sizeof(struct timespec), PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
   if((returnVal = pthread_mutexattr_init(&mutex_shared_attr)) != 0){
     fprintf(stderr, "pthread_mutexattr_init");
@@ -65,20 +68,16 @@ int main(int argc, char **argv){
   return 0;
 }
 
+
 void handleChild(char **sharedMemory, int size){
-  struct timespec start;
-  if(clock_gettime(CLOCK_REALTIME, &start) == -1){
-    perror("clock gettime");
-    exit(EXIT_FAILURE);
-  }
-  printf("start seconds: %lu nanoseconds: %lu\n", start.tv_sec, start.tv_nsec);
   //this process will produce data
+  void *data = malloc(size);
   pthread_mutex_lock(lock);
   while(*bufferFull == 1){
-   pthread_cond_wait(cond, lock);
+    pthread_cond_wait(cond, lock);
   }
   //produce data here
-  void *data = malloc(size);
+  clock_gettime(CLOCK_REALTIME, start);
   memcpy(*sharedMemory, data, size);
   *bufferFull = 1; //buffer is now full
   printf("wrote %d bytes\n", size);
@@ -88,22 +87,20 @@ void handleChild(char **sharedMemory, int size){
 
 void handleParent(char **sharedMemory, int size){
   //this process will consume data
+  void *data = malloc(size);
+  struct timespec stop;
   pthread_mutex_lock(lock);
   while(*bufferFull == 0){
     pthread_cond_wait(cond, lock);
   }
   //consume the data here
-  void *data = malloc(size);
-  memcpy(data, *sharedMemory, size);
+  //memcpy(data, *sharedMemory, size);
   *bufferFull = 0; //buffer is now empty
+  clock_gettime(CLOCK_REALTIME, &stop);
   printf("read: %d bytes\n", size);
   pthread_cond_signal(cond);
   pthread_mutex_unlock(lock);
-  free(data);
-  struct timespec stop;
-  if(clock_gettime(CLOCK_REALTIME, &stop) == -1){
-    perror("clock gettime");
-    exit(EXIT_FAILURE);
-  }
-  printf("stop seconds: %lu nanoseconds: %lu\n", stop.tv_sec, stop.tv_nsec);
+  long startnanoseconds = start->tv_sec * 1000000000 + start->tv_nsec;
+  long stopnanoseconds = stop.tv_sec * 1000000000 + stop.tv_nsec;
+  printf("diff: %lu\n", stopnanoseconds - startnanoseconds);
 }

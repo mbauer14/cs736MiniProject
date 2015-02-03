@@ -71,14 +71,14 @@ int main(int argc, char ** argv)
     }
 
 
-    printf("START sec: %lu  nano: %lu\n", start.tv_sec, start.tv_nsec);
-    printf("STOP  sec: %lu  nano: %lu\n", stop.tv_sec, stop.tv_nsec);
+    //printf("START sec: %lu  nano: %lu\n", start.tv_sec, start.tv_nsec);
+    //printf("STOP  sec: %lu  nano: %lu\n", stop.tv_sec, stop.tv_nsec);
 
     long startnano = (start.tv_sec * 1000000000) + start.tv_nsec;
     long stopnano = (stop.tv_sec * 1000000000) + stop.tv_nsec;
 
     long diff = stopnano - startnano;
-    printf("diff: %lu\n", diff);
+    printf("%lu\n", diff);
 
      
 

@@ -84,11 +84,11 @@ int main(int argc, char ** argv)
         retval = recv(cli_sockfd, curr, sizeBuffer-charsReceived, 0);
         charsReceived += retval;
         curr +=  retval;
-        printf("bytes: %d\n", retval);
-        printf("charsReceived: %d\n", charsReceived);
+        //printf("bytes: %d\n", retval);
+        //printf("charsReceived: %d\n", charsReceived);
 
     }
-    printf("blah: %s\n", strerror(errno));
+    //printf("blah: %s\n", strerror(errno));
     /* 
     if (retval == -1) {
         printf("ERROR: reading from client.\n");

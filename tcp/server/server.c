@@ -33,6 +33,8 @@ int main(int argc, char ** argv)
     }
 
     char * buff = (char *) malloc(sizeBuffer+1);
+    char * curr = buff;
+    int charsReceived = 0;
     //memset(&buff, 0, sizeBuffer);
     
     int on = 1;
@@ -76,7 +78,14 @@ int main(int argc, char ** argv)
     }
 
     //Receive the data
-    retval = recv(cli_sockfd, buff, sizeBuffer, 0);
+    while (charsReceived < sizeBuffer) {
+         
+        retval = recv(cli_sockfd, curr, sizeBuffer-charsReceived, 0);
+        charsReceived += retval;
+        curr += charsReceived;
+
+    }
+    /* 
     if (retval == -1) {
         printf("ERROR: reading from client.\n");
         close(cli_sockfd);
@@ -86,11 +95,11 @@ int main(int argc, char ** argv)
     if (retval > 0) {
         printf("num buffers received: %d\n", retval);
     }
-    
+    */
     clock_gettime(CLOCK_REALTIME, &stop);
 
-
     retval = send(cli_sockfd, &stop, sizeof(struct timespec), 0);
+
     if (retval == -1) {
         printf("ERROR: sending to client.\n");
         close(cli_sockfd);

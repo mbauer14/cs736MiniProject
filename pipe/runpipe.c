@@ -5,8 +5,16 @@ int main(int argc, char **argv){
   int pid;
   int fd_to_child[2];
   int fd_to_parent[2];
+  int size;
 
-  int size = SIZE_4;
+  if(argc < 2 || argc > 3){
+    fprintf(stderr, "Usage: %s <buffersize>\n", argv[0]);
+    exit(0);
+  }
+  else{
+    size = atoi(argv[1]);
+  }
+
 
   void *readbuffer = malloc(size);
   void *writebuffer = malloc(size);
@@ -30,6 +38,10 @@ int main(int argc, char **argv){
 
   free(readbuffer);
   free(writebuffer);
+  close(fd_to_child[0]);
+  close(fd_to_child[1]);
+  close(fd_to_parent[0]);
+  close(fd_to_parent[1]);
 
   return 0;
 }
@@ -41,10 +53,7 @@ void handleChild(int *fd_to_child, int *fd_to_parent, int size, void **readbuffe
   struct timespec stop;
   nbytes = read(fd_to_child[0], *readbuffer, size);
   clock_gettime(CLOCK_REALTIME, &stop);
-  //printf("about to write timestamp\n");
   write(fd_to_parent[1], &stop, sizeof(struct timespec));
-  //printf("Parent Stop Current Seconds: %lu Nanoseconds: %lu\n", stop.tv_sec, stop.tv_nsec);
-  //printf("read %d bytes\n", nbytes);
 }
 
 void handleParent(int *fd_to_child, int *fd_to_parent, int size, void **writebuffer){
@@ -56,8 +65,5 @@ void handleParent(int *fd_to_child, int *fd_to_parent, int size, void **writebuf
   int bytes = read(fd_to_parent[0], &stop, sizeof(struct timespec));
   long startnano = (start.tv_sec * 1000000000) + start.tv_nsec;
   long stopnano = (stop.tv_sec * 1000000000) + stop.tv_nsec;
-  printf("difference %lu\n", stopnano-startnano);
-  //printf("Start Current Seconds: %lu Nanoseconds: %lu\n", start.tv_sec, start.tv_nsec);
-  //printf("Stop Current Seconds: %lu Nanoseconds: %lu\n", stop.tv_sec, stop.tv_nsec);
-  //printf("wrote %d bytes\n", size);
+  printf("%lu\n", stopnano-startnano);
 }

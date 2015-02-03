@@ -9,7 +9,15 @@ struct timespec *start;
 
 int main(int argc, char **argv){
 
-  int size = SIZE_512K;
+  int size;
+  if(argc < 2 || argc > 3){
+    fprintf(stderr, "Usage %s <buffersize>\n", argv[0]);
+    exit(0);
+  }
+  else{
+    size = atoi(argv[1]);
+  }
+
   int returnVal;
 
   //create some shared memory here
@@ -80,7 +88,7 @@ void handleChild(char **sharedMemory, int size){
   clock_gettime(CLOCK_REALTIME, start);
   memcpy(*sharedMemory, data, size);
   *bufferFull = 1; //buffer is now full
-  printf("wrote %d bytes\n", size);
+  //printf("wrote %d bytes\n", size);
   pthread_cond_signal(cond);
   pthread_mutex_unlock(lock);
 }
@@ -97,10 +105,10 @@ void handleParent(char **sharedMemory, int size){
   //memcpy(data, *sharedMemory, size);
   *bufferFull = 0; //buffer is now empty
   clock_gettime(CLOCK_REALTIME, &stop);
-  printf("read: %d bytes\n", size);
+  //printf("read: %d bytes\n", size);
   pthread_cond_signal(cond);
   pthread_mutex_unlock(lock);
   long startnanoseconds = start->tv_sec * 1000000000 + start->tv_nsec;
   long stopnanoseconds = stop.tv_sec * 1000000000 + stop.tv_nsec;
-  printf("diff: %lu\n", stopnanoseconds - startnanoseconds);
+  printf("%lu\n", stopnanoseconds - startnanoseconds);
 }

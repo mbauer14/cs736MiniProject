@@ -1,0 +1,7 @@
+*.o
+tcp/server/server
+tcp/client/client
+sharedMemory/sharedMemory
+pipe/runpipe
+*.csv
+*.png

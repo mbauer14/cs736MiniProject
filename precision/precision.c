@@ -55,6 +55,7 @@ void setupRDTSC()
 int main(int argc, char **argv)
 {
 	int loopIntervals = 1000;
+	uint64_t i;
 
 	if (argc < 2) {
 		printf("Didn't specify loop intervals, using default.\n");
@@ -64,35 +65,38 @@ int main(int argc, char **argv)
 		loopIntervals = atoi(argv[1]);
 	}
 	
-	setupRDTSC();
-
+	//setupRDTSC();
 
 	uint64_t rdtsc_start=0, rdtsc_stop=0;
 	struct timespec cgt_start, cgt_stop;
 	struct timeval tod_start, tod_stop;
 
+	unsigned int rdtsc_start_hi, rdtsc_start_lo;
+	unsigned int rdtsc_stop_hi, rdtsc_stop_lo;
 
-	//gettimeofday(&tod_start, NULL);
+    	//__asm__ volatile("rdtsc" : "=a" (rdtsc_start_lo), "=d" (rdtsc_start_hi));
 	clock_gettime(CLOCK_REALTIME, &cgt_start);
-	rdtsc_start = RDTSC();
+	//gettimeofday(&tod_start, NULL);
 
-	uint64_t i;
 	//waste time
-	for (i=0; i< loopIntervals; i++);
+	//for (i=0; i< loopIntervals; i++);
+	//i = 0;
 
-	rdtsc_stop = RDTSC();
+
+	//__asm__ volatile("rdtsc" : "=a" (rdtsc_stop_lo), "=d" (rdtsc_stop_hi));
 	clock_gettime(CLOCK_REALTIME, &cgt_stop);
 	//gettimeofday(&tod_stop, NULL);
 
-	//long tod_diff = (tod_stop.tv_sec * 1000000000 + 1000*tod_stop.tv_usec)- (tod_start.tv_sec * 1000000000 + 1000*tod_start.tv_usec);
+	
+    	//rdtsc_start = ((uint64_t)rdtsc_start_hi << 32) | rdtsc_start_lo;
+    	//rdtsc_stop = ((uint64_t)rdtsc_stop_hi << 32) | rdtsc_stop_lo;
+	//uint64_t rdtsc_diff = ((float)(rdtsc_stop - rdtsc_start)) / TICS_PER_NANO;
 	long cgt_diff = (cgt_stop.tv_sec * 1000000000 + cgt_stop.tv_nsec)- (cgt_start.tv_sec * 1000000000 + cgt_start.tv_nsec);
-	//Difference in cycles
-	uint64_t rdtsc_diff = ((float)(rdtsc_stop - rdtsc_start)) / TICS_PER_NANO;
-	//double ticks_per_nano = ((double)rdtsc_diff) / tod_diff;
+	//long tod_diff = (tod_stop.tv_sec * 1000000000 + 1000*tod_stop.tv_usec)- (tod_start.tv_sec * 1000000000 + 1000*tod_start.tv_usec);
 
-	//printf("gettimeofday: %ld\n", tod_diff);
+	//printf("rdtsc: %ld\n", rdtsc_diff);	
 	printf("clock_gettime: %ld\n", cgt_diff);
-	printf("rdtsc: %ld\n", rdtsc_diff);	
+	//printf("gettimeofday: %ld\n", tod_diff);
 	
 
 

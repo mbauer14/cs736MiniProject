@@ -1,5 +1,5 @@
 C=gcc
-CFLAGS=-I. -lrt
+CFLAGS=-I. -lrt -lm
 DEPS = 
 OBJ = precision.o 
 

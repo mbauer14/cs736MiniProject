@@ -1,10 +1,10 @@
 C=gcc
-CFLAGS=-I.
+CFLAGS=-I. -lrt -lm
 DEPS = 
-OBJ = gettimeofday.o 
+OBJ = accuracy.o 
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-gettimeofday: $(OBJ)
+accuracy: $(OBJ)
 	gcc -o $@ $^ $(CFLAGS)

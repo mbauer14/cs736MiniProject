@@ -58,15 +58,14 @@ int main(int argc, char **argv)
     int sleepSeconds = 10;
     int numIters = 10;
     uint64_t i;
-    int numLoops = 0;
     uint64_t j;
 
 	if (argc < 3) {
-		printf("Usage: %s numLoops numIters\n", argv[0]);
+		printf("Usage: %s sleepSeconds numIters\n", argv[0]);
         return;
 	}
 	else {
-		numLoops = atoi(argv[1]);
+		sleepSeconds = atoi(argv[1]);
 		numIters = atoi(argv[2]);
 	}
 	
@@ -94,7 +93,7 @@ int main(int argc, char **argv)
         /////////////////////// TOD /////////////////////////
 
         gettimeofday(&tod_start, NULL);
-        //sleep(sleepSeconds); 
+        sleep(sleepSeconds); 
         gettimeofday(&tod_stop, NULL);
 
         tod_diff = (tod_stop.tv_sec * 1000000000 + 1000*tod_stop.tv_usec)- (tod_start.tv_sec * 1000000000 + 1000*tod_start.tv_usec);
@@ -106,23 +105,24 @@ int main(int argc, char **argv)
 
         clock_gettime(CLOCK_REALTIME, &cgt_start);
         
-        //sleep(sleepSeconds);
+        sleep(sleepSeconds);
 
         clock_gettime(CLOCK_REALTIME, &cgt_stop);
         
         cgt_diff = (cgt_stop.tv_sec * 1000000000 + cgt_stop.tv_nsec)- (cgt_start.tv_sec * 1000000000 + cgt_start.tv_nsec);
         cgt_arr[i] = cgt_diff;
 
-        printf("clock_gettime: %ld\n", cgt_diff);
+        //printf("clock_gettime: %ld\n", cgt_diff);
 
 
         ///////////////////// RDTSC /////////////////////////
             
         __asm__ volatile("rdtsc" : "=a" (rdtsc_start_lo), "=d" (rdtsc_start_hi));
-        //sleep(sleepSeconds);
+        sleep(sleepSeconds);
         __asm__ volatile("rdtsc" : "=a" (rdtsc_stop_lo), "=d" (rdtsc_stop_hi));
 
         rdtsc_start = ((long)rdtsc_start_hi << 32) | rdtsc_start_lo;
+        sleep(sleepSeconds);
         rdtsc_stop = ((long)rdtsc_stop_hi << 32) | rdtsc_stop_lo;
         
         rdtsc_diff = ((float)(rdtsc_stop - rdtsc_start)) * NANO_PER_TICS;

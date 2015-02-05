@@ -30,7 +30,7 @@ if __name__ == '__main__':
  
             # find the minimum latency for better representation, convert to milliseconds
             #minLatency = min(latency) / 1000000
-            minLatency = np.mean(latency) /1000000
+            minLatency = min(latency) /1000
             # throughput (in bytes/second) 
             minThroughput = s / minLatency
 
@@ -65,21 +65,29 @@ if __name__ == '__main__':
             'tcp': '#0000FF', 
             'sharedMemory': '#33CC33'}
 
-    ylabel = {'latency': 'Latency (in ms)', 
-            'throughput': 'Throughput (in bytes/ms)'}
+    ylabel = {'latency': 'Latency (in us)', 
+            'throughput': 'Throughput (in bytes/us)'}
+
+    titles = {'latency': 'Buffer Size vs Latency', 
+            'throughput': 'Buffer Size vs Throughput'}
+   
+    labels = {'pipe': 'Pipe', 
+            'tcp': 'Socket', 
+            'sharedMemory': 'Shared Memory'}
+
+ 
     for m in measures:
         for t in types:
-            plt.scatter(sizes, data[m][t], c=colors[t], s=30.0, label='%s' % t)
-    
-        plt.title('%s' % m)
+            plt.scatter(sizes, data[m][t], c=colors[t], s=30.0, label='%s' % labels[t])
+ 
+        plt.title('%s' % titles[m])
         #plt.yscale('log')
         plt.xscale('log')
-        plt.legend(loc=3)
+        plt.legend(loc=2)
 
         plt.xlabel("Size of Buffer (in bytes)")
         plt.ylabel(ylabel[m])
         plt.savefig('testing/nolog%s.png' % m, dpi=300)
         plt.clf() 
-
 
     plt.close()
